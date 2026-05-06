@@ -1,0 +1,39 @@
+{
+  "manifest_version": 3,
+  "name": "摸鱼岛摸鱼插件",
+  "version": "1.0",
+  "description": "支持配置Token和多个摸鱼任务",
+  "icons": {
+    "16": "icons/fishpi.png",
+    "32": "icons/fishpi.png",
+    "48": "icons/fishpi.png",
+    "128": "icons/fishpi.png"
+  },
+  "permissions": ["alarms", "storage", "scripting", "tabs"],
+  "host_permissions": ["https://*/*", "http://*/*"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://*/*", "http://*/*"],
+      "js": ["content.js"],
+      "run_at": "document_start"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["ws-hook.js"],
+      "matches": ["https://*/*", "http://*/*"]
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "定时API任务",
+    "default_icon": {
+      "16": "icons/fishpi.png",
+      "32": "icons/fishpi.png",
+      "48": "icons/fishpi.png"
+    }
+  }
+}

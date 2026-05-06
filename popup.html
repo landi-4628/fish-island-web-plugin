@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+  <meta charset="UTF-8" />
+
+  <style>
+
+    body {
+
+      width: 380px;
+
+      padding: 12px;
+
+      font-family: Arial, sans-serif;
+
+      margin: 0;
+
+    }
+
+    h3 {
+
+      margin: 0 0 10px;
+
+      font-size: 15px;
+
+      color: #222;
+
+    }
+
+    .row {
+
+      margin-bottom: 8px;
+
+    }
+
+    .tabs {
+
+      display: flex;
+
+      gap: 6px;
+
+      margin-bottom: 10px;
+
+    }
+
+    .tab-btn {
+
+      flex: 1;
+
+      border-radius: 6px;
+
+      background: #f3f3f3;
+
+    }
+
+    .tab-btn.active {
+
+      background: #dcecff;
+
+      border-color: #8ab4f8;
+
+      color: #0b57d0;
+
+      font-weight: 700;
+
+    }
+
+    .tab-panel {
+
+      display: none;
+
+    }
+
+    .tab-panel.active {
+
+      display: block;
+
+    }
+
+    input,
+
+    select {
+
+      width: 100%;
+
+      box-sizing: border-box;
+
+      padding: 6px;
+
+      margin-top: 4px;
+
+    }
+
+    button {
+
+      padding: 6px 10px;
+
+      cursor: pointer;
+
+      border: 1px solid #ccc;
+
+      background: #f5f5f5;
+
+    }
+
+    .task-item {
+
+      border: 1px solid #ddd;
+
+      border-radius: 6px;
+
+      padding: 8px;
+
+      margin-top: 8px;
+
+      background: #fafafa;
+
+    }
+
+    .task-title {
+
+      font-weight: 700;
+
+      margin-bottom: 4px;
+
+    }
+
+    .task-meta {
+
+      font-size: 12px;
+
+      color: #555;
+
+      word-break: break-all;
+
+    }
+
+    .logs-wrap {
+
+      margin-top: 6px;
+
+      max-height: 160px;
+
+      overflow-y: auto;
+
+      border: 1px solid #ddd;
+
+      border-radius: 6px;
+
+      padding: 6px;
+
+      background: #fff;
+
+    }
+
+    .log-item {
+
+      border-bottom: 1px dashed #e5e5e5;
+
+      padding: 6px 0;
+
+    }
+
+    .log-item:last-child {
+
+      border-bottom: none;
+
+    }
+
+    .chat-log-item {
+
+      border-bottom: 1px dashed #e5e5e5;
+
+      padding: 8px 0;
+
+    }
+
+    .chat-log-item:last-child {
+
+      border-bottom: none;
+
+    }
+
+    .chat-log-header {
+
+      display: flex;
+
+      justify-content: space-between;
+
+      align-items: center;
+
+      gap: 8px;
+
+      margin-bottom: 4px;
+
+    }
+
+    .chat-log-nickname {
+
+      font-size: 12px;
+
+      font-weight: 700;
+
+      color: #1f6f2d;
+
+    }
+
+    .chat-log-time {
+
+      font-size: 11px;
+
+      color: #999;
+
+      flex-shrink: 0;
+
+    }
+
+    .chat-log-content {
+
+      font-size: 12px;
+
+      color: #333;
+
+      white-space: pre-wrap;
+
+      word-break: break-word;
+
+      line-height: 1.45;
+
+    }
+
+    .chat-log-item.system .chat-log-nickname {
+
+      color: #666;
+
+    }
+
+    .chat-log-item.system .chat-log-content {
+
+      color: #666;
+
+      font-style: italic;
+
+    }
+
+    .chat-log-type-tag {
+
+      display: inline-block;
+
+      font-size: 10px;
+
+      line-height: 1;
+
+      padding: 2px 6px;
+
+      border-radius: 999px;
+
+      background: #e8f5e9;
+
+      color: #1f6f2d;
+
+      margin-left: 6px;
+
+    }
+
+    .chat-log-type-tag.system {
+
+      background: #f0f0f0;
+
+      color: #666;
+
+    }
+
+    #status {
+
+      margin-top: 8px;
+
+      font-size: 12px;
+
+      color: #1f6f2d;
+
+      min-height: 16px;
+
+    }
+
+    .section-title {
+
+      font-size: 13px;
+
+      font-weight: 700;
+
+      margin: 12px 0 6px;
+
+      color: #333;
+
+    }
+
+    .section-title:first-of-type {
+
+      margin-top: 0;
+
+    }
+
+    .stats-row {
+
+      font-size: 12px;
+
+      color: #444;
+
+      padding: 4px 0;
+
+      border-bottom: 1px dashed #eee;
+
+    }
+
+    .stats-row:last-child {
+
+      border-bottom: none;
+
+    }
+
+    .config-block {
+
+      padding-bottom: 10px;
+
+      margin-bottom: 10px;
+
+      border-bottom: 1px solid #eee;
+
+    }
+
+    .config-block:last-child {
+
+      border-bottom: none;
+
+      margin-bottom: 0;
+
+      padding-bottom: 0;
+
+    }
+
+  </style>
+
+</head>
+
+<body>
+
+  <div class="tabs">
+
+    <button id="configTabBtn" type="button" class="tab-btn active">配置</button>
+
+    <button id="logsTabBtn" type="button" class="tab-btn">日志</button>
+
+  </div>
+
+
+
+  <div id="configPanel" class="tab-panel active">
+
+    <div class="config-block">
+
+      <div class="section-title">定时 API 任务</div>
+
+      <div class="row">
+
+        <label for="taskNameInput">任务名称</label>
+
+        <input id="taskNameInput" type="text" placeholder="例如：用户同步任务" />
+
+      </div>
+
+      <div class="row">
+
+        <label for="taskUrlInput">API 地址</label>
+
+        <input id="taskUrlInput" type="url" placeholder="https://example.com/api" />
+
+      </div>
+
+      <div class="row">
+
+        <label for="taskMethodInput">请求方法</label>
+
+        <select id="taskMethodInput">
+
+          <option value="GET">GET</option>
+
+          <option value="POST">POST</option>
+
+        </select>
+
+      </div>
+
+      <div class="row">
+
+        <label for="taskIntervalInput">时间间隔（秒）</label>
+
+        <input id="taskIntervalInput" type="number" min="1" placeholder="30" />
+
+      </div>
+
+      <div class="row">
+
+        <button id="addTaskBtn" type="button">新增任务</button>
+
+      </div>
+
+      <div id="taskList"></div>
+
+    </div>
+
+
+
+    <div class="config-block">
+
+      <div class="section-title">Token 与抢红包</div>
+
+      <div class="row">
+
+        <label for="tokenInput">Token</label>
+
+        <input id="tokenInput" type="text" placeholder="输入接口 token" />
+
+      </div>
+
+      <div class="row">
+
+        <button id="saveTokenBtn" type="button">保存 Token</button>
+
+        <button id="usePageTokenBtn" type="button" style="margin-left: 6px;">自动获取 Token</button>
+
+      </div>
+
+      <div class="row" style="display:flex;align-items:center;gap:8px;">
+
+        <input id="autoRedPacketInput" type="checkbox" style="width:auto;margin:0;" />
+
+        <label for="autoRedPacketInput" style="margin:0;">开启自动抢红包</label>
+
+      </div>
+
+      <div class="row" style="display:flex;align-items:center;gap:8px;">
+
+        <input id="wsAutoGrabInput" type="checkbox" style="width:auto;margin:0;" />
+
+        <label for="wsAutoGrabInput" style="margin:0;">插件内直连 WS 抢红包</label>
+
+      </div>
+
+      <div class="row">
+
+        <label for="wsUrlInput">聊天室 WS 模板（保存聊天/弹幕等，心跳不保存）</label>
+
+        <input id="wsUrlInput" type="text" placeholder="wss://api.yucoder.cn/ws/?token={token}" />
+
+      </div>
+
+      <div class="row">
+
+        <label for="apiBaseUrlInput">抢红包 API 基础地址</label>
+
+        <input id="apiBaseUrlInput" type="url" placeholder="https://api.yucoder.cn" />
+
+      </div>
+
+      <div class="row">
+
+        <button id="saveAutoGrabSettingsBtn" type="button">保存抢红包与 WS 设置</button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+
+  <div id="logsPanel" class="tab-panel">
+
+    <div class="section-title">聊天室 WS</div>
+
+    <div class="row">
+
+      <button id="refreshWsMessagesBtn" type="button">刷新</button>
+
+    </div>
+
+    <div id="wsMessagesList" class="logs-wrap"></div>
+
+
+
+    <div class="section-title">抢红包 · 按日统计</div>
+
+    <div id="dailyRedPacketStats" class="logs-wrap"></div>
+
+
+
+    <div class="section-title">抢红包 · 明细</div>
+
+    <div id="redPacketGrabLogsList" class="logs-wrap"></div>
+
+
+
+    <div class="section-title">接口调用</div>
+
+    <div class="row">
+
+      <button id="refreshLogsBtn" type="button">刷新</button>
+
+    </div>
+
+    <div id="logsList" class="logs-wrap"></div>
+
+  </div>
+
+
+
+  <div id="status"></div>
+
+
+
+  <script src="popup.js"></script>
+
+</body>
+
+</html>
+
