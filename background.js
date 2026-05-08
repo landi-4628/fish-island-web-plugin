@@ -1,5 +1,6 @@
 const STORAGE_KEYS = {
   TOKEN: "api_token",
+  TOKEN_HEADER_NAME: "api_token_header_name",
   TASKS: "api_tasks",
   LOGS: "api_call_logs",
   AUTO_RED_PACKET: "auto_red_packet_enabled",
@@ -20,10 +21,91 @@ const MAX_WS_MESSAGE_CHARS = 8000;
 const MAX_RED_PACKET_GRAB_LOGS = 150;
 const DEFAULT_WS_URL_TEMPLATE = "wss://api.yucoder.cn/ws/?token={token}";
 const DEFAULT_API_BASE_URL = "https://api.yucoder.cn";
+const DEFAULT_TOKEN_HEADER_NAME = "fish-dog-token";
 
 const WS_BRIDGE_PATTERN = /\[redpacket\]\s*([\s\S]*?)\s*\[\/redpacket\]/gi;
 let wsClient = null;
 let wsReconnectTimer = null;
+
+/** 串行抢红包队列，避免瞬时并发、更像人工点击间隔 */
+const grabQueue = [];
+let grabQueueRunning = false;
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function randomIntInclusive(min, max) {
+  return min + Math.floor(Math.random() * (max - min + 1));
+}
+
+async function getFishTokenAuthHeaders() {
+  const data = await chrome.storage.local.get([
+    STORAGE_KEYS.TOKEN,
+    STORAGE_KEYS.TOKEN_HEADER_NAME
+  ]);
+  const token = String(data[STORAGE_KEYS.TOKEN] || "").trim();
+  const headerName = String(data[STORAGE_KEYS.TOKEN_HEADER_NAME] || "").trim() || DEFAULT_TOKEN_HEADER_NAME;
+  if (!token) {
+    return null;
+  }
+  return { [headerName]: token };
+}
+
+/**
+ * 接近浏览器 XHR/fetch 的常见头，降低 Service Worker 裸请求被风控识别的概率
+ * （服务端仍以 Sa-Token 头为准；Referer 指向 API 站点根路径）
+ */
+function buildRedPacketGrabHeaders(authHeaders, apiBaseUrl) {
+  const headers = {
+    Accept: "application/json, text/plain, */*",
+    "Accept-Language": "zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7",
+    "Cache-Control": "no-cache",
+    Pragma: "no-cache",
+    "Content-Type": "application/json",
+    ...authHeaders
+  };
+  try {
+    const origin = new URL(apiBaseUrl).origin;
+    headers.Referer = `${origin}/`;
+  } catch {
+    /* ignore */
+  }
+  return headers;
+}
+
+async function processGrabQueue() {
+  if (grabQueueRunning) {
+    return;
+  }
+  grabQueueRunning = true;
+  try {
+    while (grabQueue.length > 0) {
+      const redPacketId = grabQueue.shift();
+      await sleep(randomIntInclusive(320, 980));
+      await executeGrabRedPacketOnce(redPacketId);
+      if (grabQueue.length > 0) {
+        await sleep(randomIntInclusive(480, 1600));
+      }
+    }
+  } finally {
+    grabQueueRunning = false;
+  }
+}
+
+/**
+ * 入队抢红包（WS / 页面桥统一走此入口）
+ */
+function enqueueGrabRedPacket(redPacketId) {
+  const id = String(redPacketId || "").trim();
+  if (!id) {
+    return;
+  }
+  if (!grabQueue.includes(id)) {
+    grabQueue.push(id);
+  }
+  void processGrabQueue();
+}
 
 async function syncTaskAlarms() {
   chrome.alarms.create(SCHEDULER_ALARM, {
@@ -221,32 +303,33 @@ function isGrabApiSuccess(httpOk, apiCode, amount) {
   return httpOk && apiCode === 0 && amount != null;
 }
 
-async function tryAutoGrabRedPacket({ redPacketId }) {
+async function executeGrabRedPacketOnce(redPacketId) {
   if (!redPacketId) return;
 
   const storage = await chrome.storage.local.get([
-    STORAGE_KEYS.TOKEN,
     STORAGE_KEYS.AUTO_RED_PACKET,
     STORAGE_KEYS.AUTO_RED_PACKET_API_BASE_URL
   ]);
-  const token = storage[STORAGE_KEYS.TOKEN] || "";
   const autoEnabled = storage[STORAGE_KEYS.AUTO_RED_PACKET] !== false;
   const baseUrl = normalizeApiBaseUrl(
     storage[STORAGE_KEYS.AUTO_RED_PACKET_API_BASE_URL] || DEFAULT_API_BASE_URL
   );
 
-  if (!autoEnabled || !token) return;
+  const authHeaders = await getFishTokenAuthHeaders();
+  if (!autoEnabled || !authHeaders) return;
   if (await hasRedPacketBeenClaimed(redPacketId)) return;
 
   const url = `${baseUrl}/api/redpacket/grab?redPacketId=${encodeURIComponent(redPacketId)}`;
   const now = Date.now();
+  const headers = buildRedPacketGrabHeaders(authHeaders, baseUrl);
 
   try {
     const response = await fetch(url, {
       method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
+      headers,
+      credentials: "omit",
+      mode: "cors",
+      referrerPolicy: "strict-origin-when-cross-origin"
     });
     const text = await response.text();
     const { apiCode, amount, msg } = parseGrabJsonBody(text);
@@ -308,6 +391,11 @@ async function tryAutoGrabRedPacket({ redPacketId }) {
     });
     console.error("🧧 自动抢红包失败:", error);
   }
+}
+
+/** WS / content 脚本入口：入队 + 随机延迟后请求，避免脚本特征 */
+async function tryAutoGrabRedPacket({ redPacketId }) {
+  enqueueGrabRedPacket(redPacketId);
 }
 
 function clearWsReconnectTimer() {
@@ -374,6 +462,7 @@ async function ensureWsAutoGrabConnection() {
     clearWsReconnectTimer();
     console.log("🧧 自动抢红包 WS 已连接");
     try {
+      await sleep(randomIntInclusive(40, 220));
       wsClient.send(JSON.stringify({ type: 1 }));
     } catch {
       // ignore
@@ -429,12 +518,9 @@ async function ensureWsAutoGrabConnection() {
 }
 
 async function processDueTasks() {
-  const data = await chrome.storage.local.get([
-    STORAGE_KEYS.TOKEN,
-    STORAGE_KEYS.TASKS
-  ]);
-  const token = data[STORAGE_KEYS.TOKEN] || "";
+  const data = await chrome.storage.local.get([STORAGE_KEYS.TASKS]);
   const tasks = data[STORAGE_KEYS.TASKS] || [];
+  const authHeaders = await getFishTokenAuthHeaders();
 
   if (!tasks.length) {
     return;
@@ -456,8 +542,8 @@ async function processDueTasks() {
     if (!nextRunAt || now >= nextRunAt) {
       const method = (task.method || "GET").toUpperCase();
       const headers = {};
-      if (token) {
-        headers.Authorization = `Bearer ${token}`;
+      if (authHeaders) {
+        Object.assign(headers, authHeaders);
       }
 
       try {
@@ -541,6 +627,7 @@ chrome.storage.onChanged.addListener(async (changes, areaName) => {
   }
   if (
     changes[STORAGE_KEYS.TOKEN] ||
+    changes[STORAGE_KEYS.TOKEN_HEADER_NAME] ||
     changes[STORAGE_KEYS.AUTO_RED_PACKET] ||
     changes[STORAGE_KEYS.AUTO_RED_PACKET_WS_ENABLED] ||
     changes[STORAGE_KEYS.AUTO_RED_PACKET_WS_URL] ||
