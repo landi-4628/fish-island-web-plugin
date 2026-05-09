@@ -8,6 +8,14 @@
 
   <style>
 
+    html {
+
+      scrollbar-gutter: stable;
+
+      overflow-y: auto;
+
+    }
+
     body {
 
       width: 380px;
@@ -17,6 +25,10 @@
       font-family: Arial, sans-serif;
 
       margin: 0;
+
+      overflow-x: hidden;
+
+      box-sizing: border-box;
 
     }
 
@@ -146,6 +158,8 @@
 
       overflow-y: auto;
 
+      scrollbar-gutter: stable;
+
       border: 1px solid #ddd;
 
       border-radius: 6px;
@@ -167,6 +181,59 @@
     .log-item:last-child {
 
       border-bottom: none;
+
+    }
+
+    .logs-wrap.logs-api {
+
+      max-height: min(52vh, 420px);
+
+      min-height: 100px;
+
+      overflow-y: auto;
+
+      overflow-x: auto;
+
+      -webkit-overflow-scrolling: touch;
+
+    }
+
+    .log-api-url,
+    .log-api-msg {
+
+      font-size: 12px;
+
+      color: #555;
+
+      white-space: pre-wrap;
+
+      word-break: break-word;
+
+    }
+
+    .log-api-url {
+
+      margin-top: 2px;
+
+    }
+
+    .log-api-msg {
+
+      margin-top: 4px;
+
+      max-height: 10rem;
+
+      overflow-y: auto;
+
+      overflow-x: auto;
+
+      padding: 6px 8px;
+
+      background: #f7f7f7;
+
+      border-radius: 4px;
+
+      border: 1px solid #eee;
 
     }
 
@@ -286,24 +353,6 @@
 
     }
 
-    .section-title {
-
-      font-size: 13px;
-
-      font-weight: 700;
-
-      margin: 12px 0 6px;
-
-      color: #333;
-
-    }
-
-    .section-title:first-of-type {
-
-      margin-top: 0;
-
-    }
-
     .stats-row {
 
       font-size: 12px;
@@ -322,7 +371,99 @@
 
     }
 
-    .config-block {
+    .feature-account-bar {
+
+      display: flex;
+
+      align-items: center;
+
+      gap: 10px;
+
+      flex-wrap: wrap;
+
+      padding: 8px 10px;
+
+      margin-bottom: 10px;
+
+      border-radius: 10px;
+
+      background: linear-gradient(110deg, #e8f0ff 0%, #f3ecff 45%, #fff5eb 100%);
+
+      border: 1px solid #d4ddf0;
+
+      box-shadow: 0 1px 2px rgba(15, 30, 60, 0.06);
+
+    }
+
+    .feature-account-bar label {
+
+      margin: 0;
+
+      flex-shrink: 0;
+
+      font-size: 12px;
+
+      font-weight: 700;
+
+      color: #2a3f5f;
+
+    }
+
+    .feature-account-bar select {
+
+      flex: 1;
+
+      min-width: 120px;
+
+      max-width: 220px;
+
+      margin-top: 0;
+
+    }
+
+    .feature-account-checks {
+
+      display: flex;
+
+      flex-direction: column;
+
+      gap: 4px;
+
+      width: 100%;
+
+      margin-top: 4px;
+
+    }
+
+    .feat-acc-row {
+
+      cursor: pointer;
+
+      user-select: none;
+
+    }
+
+    .feat-acc-row input {
+
+      width: auto;
+
+      margin: 0;
+
+    }
+
+    .feature-account-bar-title {
+
+      font-size: 11px;
+
+      font-weight: 700;
+
+      color: #2a3f5f;
+
+      width: 100%;
+
+    }
+
+    .collapse-section {
 
       padding-bottom: 10px;
 
@@ -332,13 +473,93 @@
 
     }
 
-    .config-block:last-child {
+    .collapse-section:last-child {
 
       border-bottom: none;
 
       margin-bottom: 0;
 
       padding-bottom: 0;
+
+    }
+
+    .collapse-header {
+
+      width: 100%;
+
+      display: flex;
+
+      align-items: center;
+
+      gap: 8px;
+
+      padding: 8px 10px;
+
+      margin: 0;
+
+      border: 1px solid #dde3ea;
+
+      background: linear-gradient(180deg, #f8fafc 0%, #eef2f7 100%);
+
+      border-radius: 8px;
+
+      cursor: pointer;
+
+      font-size: 13px;
+
+      font-weight: 700;
+
+      color: #222;
+
+      text-align: left;
+
+      box-sizing: border-box;
+
+      font-family: inherit;
+
+    }
+
+    .collapse-header:hover {
+
+      background: linear-gradient(180deg, #fff 0%, #e8eef6 100%);
+
+    }
+
+    .collapse-chevron {
+
+      display: inline-block;
+
+      transition: transform 0.15s ease;
+
+      font-size: 10px;
+
+      color: #555;
+
+      flex-shrink: 0;
+
+    }
+
+    .collapse-section.expanded .collapse-chevron {
+
+      transform: rotate(90deg);
+
+    }
+
+    .collapse-title-text {
+
+      flex: 1;
+
+    }
+
+    .collapse-section:not(.expanded) .collapse-body {
+
+      display: none;
+
+    }
+
+    .collapse-section.expanded .collapse-body {
+
+      padding-top: 8px;
 
     }
 
@@ -360,9 +581,105 @@
 
   <div id="configPanel" class="tab-panel active">
 
-    <div class="config-block">
+    <div class="collapse-section">
 
-      <div class="section-title">定时 API 任务</div>
+      <button type="button" class="collapse-header" aria-expanded="false">
+
+        <span class="collapse-chevron" aria-hidden="true">▶</span>
+
+        <span class="collapse-title-text">账号</span>
+
+      </button>
+
+      <div class="collapse-body">
+
+      <div class="row" style="display:flex;gap:6px;align-items:flex-end;flex-wrap:wrap;">
+
+        <div style="flex:1;min-width:140px;">
+
+          <label for="accountSelect">编辑资料 · 账号</label>
+
+          <select id="accountSelect"></select>
+
+        </div>
+
+        <button id="addAccountBtn" type="button">新增账号</button>
+
+        <button id="removeAccountBtn" type="button">删除</button>
+
+      </div>
+
+      <div class="row">
+
+        <label for="accountNameInput">账号名称（备注）</label>
+
+        <input id="accountNameInput" type="text" placeholder="例如：大号 / 小号" />
+
+      </div>
+
+      <div class="row">
+
+        <label for="tokenHeaderInput">Token 请求头名称（可选，默认 fish-dog-token）</label>
+
+        <input id="tokenHeaderInput" type="text" placeholder="fish-dog-token" />
+
+      </div>
+
+      <div class="row">
+
+        <label for="tokenInput">Token</label>
+
+        <input id="tokenInput" type="text" placeholder="在此填写当前账号的 Token" />
+
+      </div>
+
+      <div class="row">
+
+        <label for="accountPetIdInput">宠物 ID</label>
+
+        <input id="accountPetIdInput" type="text" placeholder="可手动填写，或通过下方「获取宠物 ID」填入后点「保存账号资料」" />
+
+      </div>
+
+      <div class="row" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+
+        <button id="fetchPetIdBtn" type="button">获取宠物 ID</button>
+
+      </div>
+
+      <div class="row" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+
+        <button id="usePageTokenBtn" type="button">获取页 Token</button>
+
+        <button id="saveTokenBtn" type="button">保存账号资料</button>
+
+      </div>
+
+      </div>
+
+    </div>
+
+
+
+    <div class="collapse-section">
+
+      <button type="button" class="collapse-header" aria-expanded="false">
+
+        <span class="collapse-chevron" aria-hidden="true">▶</span>
+
+        <span class="collapse-title-text">定时 API 任务</span>
+
+      </button>
+
+      <div class="collapse-body">
+
+      <div class="feature-account-bar">
+
+        <div class="feature-account-bar-title">执行任务使用（可多选）</div>
+
+        <div id="taskFeatureAccounts" class="feature-account-checks"></div>
+
+      </div>
 
       <div class="row">
 
@@ -410,27 +727,29 @@
 
       <div id="taskList"></div>
 
+      </div>
+
     </div>
 
 
 
-    <div class="config-block">
+    <div class="collapse-section">
 
-      <div class="section-title">Token 与抢红包</div>
+      <button type="button" class="collapse-header" aria-expanded="false">
 
-      <div class="row">
+        <span class="collapse-chevron" aria-hidden="true">▶</span>
 
-        <label for="tokenInput">Token</label>
+        <span class="collapse-title-text">抢红包与 WS</span>
 
-        <input id="tokenInput" type="text" placeholder="输入接口 token" />
+      </button>
 
-      </div>
+      <div class="collapse-body">
 
-      <div class="row">
+      <div class="feature-account-bar">
 
-        <button id="saveTokenBtn" type="button">保存 Token</button>
+        <div class="feature-account-bar-title">抢红包 / WS 使用（可多选，各号独立连接）</div>
 
-        <button id="usePageTokenBtn" type="button" style="margin-left: 6px;">自动获取 Token</button>
+        <div id="redPacketFeatureAccounts" class="feature-account-checks"></div>
 
       </div>
 
@@ -472,6 +791,144 @@
 
       </div>
 
+      </div>
+
+    </div>
+
+
+
+    <div class="collapse-section">
+
+      <button type="button" class="collapse-header" aria-expanded="false">
+
+        <span class="collapse-chevron" aria-hidden="true">▶</span>
+
+        <span class="collapse-title-text">每日签到与发言</span>
+
+      </button>
+
+      <div class="collapse-body">
+
+      <div class="feature-account-bar">
+
+        <div class="feature-account-bar-title">批量配置每日任务（可多选，开关与 client 同步到所选账号）</div>
+
+        <div id="dailyFeatureAccounts" class="feature-account-checks"></div>
+
+      </div>
+
+      <div class="task-meta" style="margin-bottom:6px;">
+
+        勾选多个账号后，下方开关与 client 会一次性写入这些账号；当前显示的状态以列表中第一个勾选账号为准。
+
+      </div>
+
+      <div class="row" style="display:flex;align-items:center;gap:8px;">
+
+        <input id="autoDailySignInInput" type="checkbox" style="width:auto;margin:0;" />
+
+        <label for="autoDailySignInInput" style="margin:0;">每日自动签到（随机时段）</label>
+
+      </div>
+
+      <div class="row" style="display:flex;align-items:center;gap:8px;">
+
+        <input id="autoDailyChatInput" type="checkbox" style="width:auto;margin:0;" />
+
+        <label for="autoDailyChatInput" style="margin:0;">每日自动发言 20 条（内容 1～20）</label>
+
+      </div>
+
+      <div class="row">
+
+        <label for="autoDailyChatClientInput">聊天 client 标识（可选，空则与 uTools 客户端一致）</label>
+
+        <input id="autoDailyChatClientInput" type="text" placeholder="uTools/1.1.13" />
+
+      </div>
+
+      <div class="row" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+
+        <button id="runDailyRoutineNowBtn" type="button">立即执行签到与发言</button>
+
+        <span class="task-meta">按上方勾选账号；签到会立即请求接口；发言 1～20 为后台长任务（今日已发完会跳过）</span>
+
+      </div>
+
+      </div>
+
+    </div>
+
+
+
+    <div class="collapse-section">
+
+      <button type="button" class="collapse-header" aria-expanded="false">
+
+        <span class="collapse-chevron" aria-hidden="true">▶</span>
+
+        <span class="collapse-title-text">宠物喂养抚摸</span>
+
+      </button>
+
+      <div class="collapse-body">
+
+      <div class="feature-account-bar">
+
+        <div class="feature-account-bar-title">自动执行任务账号（可多选）</div>
+
+        <div id="petFeatureAccounts" class="feature-account-checks"></div>
+
+      </div>
+
+      <div class="task-meta" style="margin-bottom:6px;">
+
+        开启自动后，按所选间隔定时执行；使用上方「账号」里已保存的宠物 ID，直接请求抚摸/喂养（不再调查询接口）。请先在账号区填写宠物 ID 并「保存账号资料」。请求发往下方「抢红包 API 基础地址」。若未保存宠物 ID 或未填 Token 将不会排程。接口有冷却时，间隔过短会表现为失败日志。
+
+      </div>
+
+      <div class="row">
+
+        <label for="petCareIntervalSelect">自动执行间隔</label>
+
+        <select id="petCareIntervalSelect">
+
+          <option value="15">15 分钟</option>
+
+          <option value="30">30 分钟</option>
+
+          <option value="45">45 分钟</option>
+
+          <option value="60">60 分钟</option>
+
+          <option value="90">90 分钟</option>
+
+          <option value="120">120 分钟</option>
+
+          <option value="180">180 分钟</option>
+
+        </select>
+
+      </div>
+
+      <div class="row" style="display:flex;align-items:center;gap:8px;">
+
+        <input id="autoPetCareInput" type="checkbox" style="width:auto;margin:0;" />
+
+        <label for="autoPetCareInput" style="margin:0;">开启自动喂养抚摸宠物</label>
+
+      </div>
+
+      <div class="row" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+
+        <button id="runPetCareNowBtn" type="button">立即执行喂养抚摸</button>
+
+        <span class="task-meta">按上方勾选账号，不要求已开自动（未开自动时不重排下次闹钟）</span>
+
+      </div>
+
+      </div>
+
     </div>
 
   </div>
@@ -480,7 +937,57 @@
 
   <div id="logsPanel" class="tab-panel">
 
-    <div class="section-title">聊天室 WS</div>
+    <div class="row" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px;">
+
+      <button id="clearAllLogsBtn" type="button">清空全部日志</button>
+
+      <span class="task-meta">清空接口调用、聊天室 WS、抢红包明细（不可恢复）</span>
+
+    </div>
+
+    <div class="collapse-section">
+
+      <button type="button" class="collapse-header" aria-expanded="false">
+
+        <span class="collapse-chevron" aria-hidden="true">▶</span>
+
+        <span class="collapse-title-text">按账号筛选日志</span>
+
+      </button>
+
+      <div class="collapse-body">
+
+    <div class="row">
+
+      <label for="logsAccountFilter">查看账号</label>
+
+      <select id="logsAccountFilter">
+
+        <option value="__all">全部账号</option>
+
+        <option value="__unassigned">未标注账号（旧记录）</option>
+
+      </select>
+
+    </div>
+
+      </div>
+
+    </div>
+
+
+
+    <div class="collapse-section">
+
+      <button type="button" class="collapse-header" aria-expanded="false">
+
+        <span class="collapse-chevron" aria-hidden="true">▶</span>
+
+        <span class="collapse-title-text">聊天室 WS</span>
+
+      </button>
+
+      <div class="collapse-body">
 
     <div class="row">
 
@@ -490,21 +997,63 @@
 
     <div id="wsMessagesList" class="logs-wrap"></div>
 
+      </div>
+
+    </div>
 
 
-    <div class="section-title">抢红包 · 按日统计</div>
+
+    <div class="collapse-section">
+
+      <button type="button" class="collapse-header" aria-expanded="false">
+
+        <span class="collapse-chevron" aria-hidden="true">▶</span>
+
+        <span class="collapse-title-text">抢红包 · 按日统计</span>
+
+      </button>
+
+      <div class="collapse-body">
 
     <div id="dailyRedPacketStats" class="logs-wrap"></div>
 
+      </div>
+
+    </div>
 
 
-    <div class="section-title">抢红包 · 明细</div>
+
+    <div class="collapse-section">
+
+      <button type="button" class="collapse-header" aria-expanded="false">
+
+        <span class="collapse-chevron" aria-hidden="true">▶</span>
+
+        <span class="collapse-title-text">抢红包 · 明细</span>
+
+      </button>
+
+      <div class="collapse-body">
 
     <div id="redPacketGrabLogsList" class="logs-wrap"></div>
 
+      </div>
+
+    </div>
 
 
-    <div class="section-title">接口调用</div>
+
+    <div class="collapse-section">
+
+      <button type="button" class="collapse-header" aria-expanded="false">
+
+        <span class="collapse-chevron" aria-hidden="true">▶</span>
+
+        <span class="collapse-title-text">接口调用</span>
+
+      </button>
+
+      <div class="collapse-body">
 
     <div class="row">
 
@@ -512,7 +1061,11 @@
 
     </div>
 
-    <div id="logsList" class="logs-wrap"></div>
+    <div id="logsList" class="logs-wrap logs-api"></div>
+
+      </div>
+
+    </div>
 
   </div>
 
